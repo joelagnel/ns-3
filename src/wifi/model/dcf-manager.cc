@@ -375,7 +375,8 @@ DcfManager::RequestAccess (DcfState *state)
    * by notifying the collision to the user.
    */
   if (state->GetBackoffSlots () == 0 && 
-      IsBusy ())
+	  GetBackoffStartFor (state) > Simulator::Now ())
+    // IsBusy ())
     {
       MY_DEBUG ("medium is busy: collision");
       /* someone else has accessed the medium.
