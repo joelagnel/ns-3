@@ -313,6 +313,8 @@ WifiNetDevice::ForwardUp (Ptr<Packet> packet, Mac48Address from, Mac48Address to
       m_mac->NotifyRx (packet);
       m_forwardUp (this, packet, llc.GetType (), from);
     }
+  else
+      m_mac->NotifyRx(packet);
 
   if (!m_promiscRx.IsNull ())
     {
