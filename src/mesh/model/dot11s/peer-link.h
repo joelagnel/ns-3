@@ -100,8 +100,8 @@ public:
   /// Set callback
   void MLMESetSignalStatusCallback (SignalStatusCallback);
   /// Reports about transmission success/failure
-  void TransmissionSuccess ();
-  void TransmissionFailure ();
+  void TransmissionSuccess (uint32_t size);
+  void TransmissionFailure (uint32_t size);
   //\}
   ///\brief Statistics
   void Report (std::ostream & os) const;
@@ -254,6 +254,11 @@ private:
   //\}
   /// How to report my status change
   SignalStatusCallback m_linkStatusCallback;
+
+  uint32_t m_packetSuccessCount;
+  uint32_t m_packetSuccessBytes;
+  uint32_t m_packetFailCount;
+  uint32_t m_packetFailBytes;
 };
 
 } // namespace dot11s

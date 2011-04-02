@@ -52,12 +52,12 @@ PeerManagementProtocolMac::SetParent (Ptr<MeshWifiInterfaceMac> parent)
 void
 PeerManagementProtocolMac::TxError (WifiMacHeader const &hdr)
 {
-  m_protocol->TransmissionFailure (m_ifIndex, hdr.GetAddr1 ());
+  m_protocol->TransmissionFailure (m_ifIndex, hdr.GetAddr1 (), hdr.GetSize ());
 }
 void
 PeerManagementProtocolMac::TxOk (WifiMacHeader const &hdr)
 {
-  m_protocol->TransmissionSuccess (m_ifIndex, hdr.GetAddr1 ());
+  m_protocol->TransmissionSuccess (m_ifIndex, hdr.GetAddr1 (), hdr.GetSize ());
 }
 bool
 PeerManagementProtocolMac::Receive (Ptr<Packet> const_packet, const WifiMacHeader & header)

@@ -101,7 +101,11 @@ PeerLink::PeerLink () :
   m_packetFail (0),
   m_state (IDLE),
   m_retryCounter (0),
-  m_maxPacketFail (3)
+  m_maxPacketFail (3),
+  m_packetSuccessCount (0),
+  m_packetSuccessBytes (0),
+  m_packetFailCount (0),
+  m_packetFailBytes (0)
 {
 }
 PeerLink::~PeerLink ()
@@ -162,14 +166,18 @@ PeerLink::BeaconLoss ()
   StateMachine (CNCL);
 }
 void
-PeerLink::TransmissionSuccess ()
+PeerLink::TransmissionSuccess (uint32_t size)
 {
   m_packetFail = 0;
+  m_packetSuccessCount ++;
+  m_packetSuccessBytes += size;
 }
 void
-PeerLink::TransmissionFailure ()
+PeerLink::TransmissionFailure (uint32_t size)
 {
   m_packetFail ++;
+  m_packetFailCount ++;
+  m_packetFailBytes += size;
   if (m_packetFail == m_maxPacketFail)
     {
       StateMachine (CNCL);
@@ -699,6 +707,10 @@ PeerLink::Report (std::ostream & os) const
     "localLinkId=\"" << m_localLinkId << "\"" << std::endl <<
     "peerLinkId=\"" << m_peerLinkId << "\"" << std::endl <<
     "assocId=\"" << m_assocId << "\"" << std::endl <<
+    "FrameSuccessCount=\"" << m_packetSuccessCount << "\"" << std::endl <<
+    "FrameSuccessBytes=\"" << m_packetSuccessBytes << "\"" << std::endl <<
+    "FrameFailCount=\"" << m_packetFailCount << "\"" << std::endl <<
+    "FrameFailBytes=\"" << m_packetFailBytes << "\"" << std::endl <<
     "/>" << std::endl;
 }
 } // namespace dot11s

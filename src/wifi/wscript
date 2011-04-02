@@ -48,6 +48,7 @@ def build(bld):
         'model/cara-wifi-manager.cc',
         'model/minstrel-wifi-manager.cc',
         'model/qos-tag.cc',
+        'model/tsf-tag.cc',
         'model/qos-utils.cc',
         'model/edca-txop-n.cc',
         'model/msdu-aggregator.cc',

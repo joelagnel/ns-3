@@ -52,11 +52,12 @@ public:
    * \param retryCounter is slrc or ssrc value at the moment of
    * success transmission.
    */
-  void NotifyTxSuccess (uint32_t retryCounter);
+  void NotifyTxSuccess (uint32_t retryCounter, double packetTime);
   /// Updates average frame error rate when final data or RTS has failed.
   void NotifyTxFailed ();
   /// Returns frame error rate (probability that frame is corrupted due to transmission error).
   double GetFrameErrorRate () const;
+  double GetPacketTimeAvg () const;
 private:
   /**
    * \brief Calculate averaging coefficient for frame error rate. Depends on time of the last update.
@@ -70,6 +71,9 @@ private:
   Time m_lastUpdate;
   /// moving percentage of failed frames
   double m_failAvg;
+
+  /// moving average of packet queue time + backoff time + transmission time + ack delay
+  double m_packetTimeAvg;
 };
 
 /**
@@ -187,7 +191,7 @@ public:
    * we just sent.
    */
   void ReportDataOk (Mac48Address address, const WifiMacHeader *header,
-                     double ackSnr, WifiMode ackMode, double dataSnr);
+                     double ackSnr, WifiMode ackMode, double dataSnr, double packetTime);
   /**
    * Should be invoked after calling ReportRtsFailed if 
    * NeedRtsRetransmission returns false
@@ -393,6 +397,7 @@ private:
   WifiRemoteStation *Lookup (Mac48Address address, const WifiMacHeader *header) const;
   WifiMode GetControlAnswerMode (Mac48Address address, WifiMode reqMode);
   uint32_t GetNFragments (Ptr<const Packet> packet);
+
 
   typedef std::vector <WifiRemoteStation *> Stations;
   typedef std::vector <WifiRemoteStationState *> StationStates;

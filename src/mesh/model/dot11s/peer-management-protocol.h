@@ -116,11 +116,11 @@ public:
   /**
    * \brief Cancels peer link due to successive transmission failures
    */
-  void TransmissionFailure (uint32_t interface, const Mac48Address peerAddress);
+  void TransmissionFailure (uint32_t interface, const Mac48Address peerAddress, uint32_t size);
   /**
    * \brief resets transmission failure statistics
    */
-  void TransmissionSuccess (uint32_t interface, const Mac48Address peerAddress);
+  void TransmissionSuccess (uint32_t interface, const Mac48Address peerAddress, uint32_t size);
   /**
    * \brief Checks if there is established link
    */

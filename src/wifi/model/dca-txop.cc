@@ -33,6 +33,7 @@
 #include "wifi-mac-trailer.h"
 #include "wifi-mac.h"
 #include "random-stream.h"
+#include "tsf-tag.h"
 
 NS_LOG_COMPONENT_DEFINE ("DcaTxop");
 
@@ -225,7 +226,21 @@ DcaTxop::Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr)
   uint32_t fullPacketSize = hdr.GetSerializedSize () + packet->GetSize () + fcs.GetSerializedSize ();
   m_stationManager->PrepareForQueue (hdr.GetAddr1 (), &hdr,
                                      packet, fullPacketSize);
-  m_queue->Enqueue (packet, hdr);
+  
+  Ptr <Packet> p = packet->Copy ();
+  if (hdr.IsData () && !hdr.GetAddr1 ().IsBroadcast () && !hdr.IsAck ()) 
+    {
+      TsfTag tag;
+      p->RemovePacketTag (tag);
+      
+      tag.SetQueueTime (Simulator::Now ());
+      tag.SetAckTime (Seconds (0.0));
+      p->AddPacketTag (tag);
+
+      NS_LOG_DEBUG ("==> Packet Queue Time : " << tag.GetQueueTime ().GetMicroSeconds ());
+    }
+
+  m_queue->Enqueue (p, hdr);
   StartAccessIfNeeded ();
 }
 

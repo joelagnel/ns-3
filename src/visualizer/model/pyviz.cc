@@ -598,6 +598,8 @@ PyViz::TraceNetDevTxWifi (std::string context, Ptr<const Packet> packet)
     {
       destinationAddress = hdr.GetAddr3 ();
     }
+
+  NS_LOG_FUNCTION(context<<"Addr1: " << hdr.GetAddr1()<<"Addr2: " << hdr.GetAddr2()<<"Addr3: " << hdr.GetAddr3()<<"Addr4: " << hdr.GetAddr4()<<"\n\n");
   TraceNetDevTxCommon (context, packet, destinationAddress);
 }
 
@@ -768,6 +770,8 @@ PyViz::TraceNetDevRxWifi (std::string context, Ptr<const Packet> packet)
     {
       sourceAddress = hdr.GetAddr4 ();
     }
+
+  NS_LOG_FUNCTION(context<<"Addr1: " << hdr.GetAddr1()<<"Addr2: " << hdr.GetAddr2()<<"Addr3: " << hdr.GetAddr3()<<"Addr4: " << hdr.GetAddr4()<<"\n\n");
 
   TraceNetDevRxCommon (context, packet, sourceAddress);
 }

@@ -526,7 +526,7 @@ private:
   void BlockAckTimeout (void);
   void CtsTimeout (void);
   void SendCtsAfterRts (Mac48Address source, Time duration, WifiMode txMode, double rtsSnr);
-  void SendAckAfterData (Mac48Address source, Time duration, WifiMode txMode, double rtsSnr);
+  void SendAckAfterData (Mac48Address source, Time duration, WifiMode txMode, double rtsSnr, Ptr<Packet> p);
   void SendDataAfterCts (Mac48Address source, Time duration, WifiMode txMode);
   void WaitSifsAfterEndTx (void);
 

@@ -917,6 +917,7 @@ class Visualizer(gobject.GObject):
                 rx_bytes += transmission.bytes
                 count += 1
                 transmissions_average[key] = rx_bytes, count
+                # print "[Joel] Transmitter: ", transmission.transmitter.GetId(), ", Receiver: ", transmission.receiver.GetId(), "Bytes: ", transmission.bytes, "\n"
 
         old_arrows = self._transmission_arrows
         for arrow, label in old_arrows:

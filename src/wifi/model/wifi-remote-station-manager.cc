@@ -408,17 +408,17 @@ WifiRemoteStationManager::ReportRtsOk (Mac48Address address, const WifiMacHeader
 {
   NS_ASSERT (!address.IsGroup ());
   WifiRemoteStation *station = Lookup (address, header);
-  station->m_state->m_info.NotifyTxSuccess (station->m_ssrc);
+  station->m_state->m_info.NotifyTxSuccess (station->m_ssrc, 0);
   station->m_ssrc = 0;
   DoReportRtsOk (station, ctsSnr, ctsMode, rtsSnr);
 }
 void
 WifiRemoteStationManager::ReportDataOk (Mac48Address address, const WifiMacHeader *header,
-                                        double ackSnr, WifiMode ackMode, double dataSnr)
+                                        double ackSnr, WifiMode ackMode, double dataSnr, double packetTime)
 {
   NS_ASSERT (!address.IsGroup ());
   WifiRemoteStation *station = Lookup (address, header);
-  station->m_state->m_info.NotifyTxSuccess (station->m_slrc);
+  station->m_state->m_info.NotifyTxSuccess (station->m_slrc, packetTime);
   station->m_slrc = 0;
   DoReportDataOk (station, ackSnr, ackMode, dataSnr);
 }
@@ -813,7 +813,8 @@ WifiRemoteStationManager::GetNSupported (const WifiRemoteStation *station) const
 WifiRemoteStationInfo::WifiRemoteStationInfo () :
   m_memoryTime (Seconds (1.0)),
   m_lastUpdate (Seconds (0.0)),
-  m_failAvg (0.0)
+  m_failAvg (0.0),
+  m_packetTimeAvg (0.0)
 {}
 
 double
@@ -827,22 +828,33 @@ WifiRemoteStationInfo::CalculateAveragingCoefficient ()
 }
 
 void
-WifiRemoteStationInfo::NotifyTxSuccess (uint32_t retryCounter)
+WifiRemoteStationInfo::NotifyTxSuccess (uint32_t retryCounter, double packetTime)
 {
   double coefficient = CalculateAveragingCoefficient ();
   m_failAvg = (double)retryCounter / (1 + (double) retryCounter) * (1.0 - coefficient) + coefficient * m_failAvg;
+  if (packetTime > 0)
+    m_packetTimeAvg = packetTime * (1.0 - coefficient) + coefficient * m_packetTimeAvg;
+  NS_LOG_DEBUG (retryCounter);
 }
 
 void
-WifiRemoteStationInfo::NotifyTxFailed ()
+WifiRemoteStationInfo::NotifyTxFailed (/*double packetTime*/)
 {
   double coefficient = CalculateAveragingCoefficient ();
   m_failAvg = (1.0 - coefficient) + coefficient * m_failAvg;
+  //if (packetTime > 0)
+  //m_packetTimeAvg  = coefficient * m_packetTimeAvg;
 }
 
 double
 WifiRemoteStationInfo::GetFrameErrorRate () const
 {
   return m_failAvg;
+}
+
+double
+WifiRemoteStationInfo::GetPacketTimeAvg () const
+{
+  return m_packetTimeAvg;
 }
 } // namespace ns3

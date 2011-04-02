@@ -364,6 +364,9 @@ HwmpProtocol::ForwardUnicast (uint32_t  sourceIface, const Mac48Address source, 
   result = m_rtable->LookupReactiveExpired (destination);
   if (ShouldSendPreq (destination))
     {
+	  NS_LOG_ERROR("Source " << source << " sending preq for destination " << destination << "\n");
+	  // Accepted preq from address" << from << ", preq:" << preq);
+
       uint32_t originator_seqno = GetNextHwmpSeqno ();
       uint32_t dst_seqno = 0;
       if (result.retransmitter != Mac48Address::GetBroadcast ())

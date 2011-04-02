@@ -33,6 +33,7 @@
 #include "wifi-mac-trailer.h"
 #include "qos-utils.h"
 #include "edca-txop-n.h"
+#include "tsf-tag.h"
 
 NS_LOG_COMPONENT_DEFINE ("MacLow");
 
@@ -714,10 +715,15 @@ MacLow::ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiMode txMode, WifiPreamb
       NS_LOG_DEBUG ("receive ack from="<<m_currentHdr.GetAddr1 ());
       SnrTag tag;
       packet->RemovePacketTag (tag);
+
+      TsfTag t;
+      if (packet->RemovePacketTag (t))
+        NS_LOG_DEBUG ("*** TSF diff: " << (t.GetAckTime () - t.GetQueueTime ()).GetMicroSeconds ());
+
       m_stationManager->ReportRxOk (m_currentHdr.GetAddr1 (), &m_currentHdr,
                                     rxSnr, txMode);
       m_stationManager->ReportDataOk (m_currentHdr.GetAddr1 (), &m_currentHdr,
-                                      rxSnr, txMode, tag.Get ());
+                                      rxSnr, txMode, tag.Get (), t.Get ());
       bool gotAck = false;
       if (m_txParams.MustWaitNormalAck () &&
           m_normalAckTimeoutEvent.IsRunning ()) 
@@ -824,7 +830,8 @@ MacLow::ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiMode txMode, WifiPreamb
                                                     hdr.GetAddr2 (), 
                                                     hdr.GetDuration (),
                                                     txMode,
-                                                    rxSnr);
+                                                    rxSnr,
+                                                    packet);
             }
           else if (hdr.IsQosBlockAck ())
             {
@@ -856,12 +863,14 @@ MacLow::ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiMode txMode, WifiPreamb
         {
           NS_LOG_DEBUG ("rx unicast/sendAck from=" << hdr.GetAddr2 ());
           NS_ASSERT (m_sendAckEvent.IsExpired ());
+            
           m_sendAckEvent = Simulator::Schedule (GetSifs (),
                                                 &MacLow::SendAckAfterData, this,
                                                 hdr.GetAddr2 (), 
                                                 hdr.GetDuration (),
                                                 txMode,
-                                                rxSnr);
+                                                rxSnr,
+                                                packet);
         }
       goto rxPacket;
     } 
@@ -1471,7 +1480,7 @@ MacLow::FastAckFailedTimeout (void)
 }
 
 void
-MacLow::SendAckAfterData (Mac48Address source, Time duration, WifiMode dataTxMode, double dataSnr)
+MacLow::SendAckAfterData (Mac48Address source, Time duration, WifiMode dataTxMode, double dataSnr, Ptr<Packet> p)
 {
   NS_LOG_FUNCTION (this);
   /* send an ACK when you receive 
@@ -1498,6 +1507,19 @@ MacLow::SendAckAfterData (Mac48Address source, Time duration, WifiMode dataTxMod
   SnrTag tag;
   tag.Set (dataSnr);
   packet->AddPacketTag (tag);
+
+  TsfTag t;
+  bool succ = p->RemovePacketTag (t);
+
+  if (succ) 
+  {
+    t.SetAckTime (Simulator::Now ());
+    NS_LOG_DEBUG ("==> Setting ACK time to " << t.GetAckTime ());
+    packet->AddPacketTag (t);
+
+    //packet->PrintPacketTags (std::cout);
+  }
+
 
   ForwardDown (packet, &ack, ackTxMode);
 }
