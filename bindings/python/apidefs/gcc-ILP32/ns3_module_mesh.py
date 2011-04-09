@@ -2037,11 +2037,11 @@ def register_Ns3Dot11sPeerLink_methods(root_module, cls):
     ## peer-link.h: void ns3::dot11s::PeerLink::TransmissionSuccess() [member function]
     cls.add_method('TransmissionSuccess', 
                    'void', 
-                   [])
+                   [param('uint32_t', 'size')])
     ## peer-link.h: void ns3::dot11s::PeerLink::TransmissionFailure() [member function]
     cls.add_method('TransmissionFailure', 
                    'void', 
-                   [])
+                   [param('uint32_t', 'size')])
     ## peer-link.h: void ns3::dot11s::PeerLink::Report(std::ostream & os) const [member function]
     cls.add_method('Report', 
                    'void', 
@@ -2218,11 +2218,11 @@ def register_Ns3Dot11sPeerManagementProtocol_methods(root_module, cls):
     ## peer-management-protocol.h: void ns3::dot11s::PeerManagementProtocol::TransmissionFailure(uint32_t interface, ns3::Mac48Address const peerAddress) [member function]
     cls.add_method('TransmissionFailure', 
                    'void', 
-                   [param('uint32_t', 'interface'), param('ns3::Mac48Address const', 'peerAddress')])
+                   [param('uint32_t', 'interface'), param('ns3::Mac48Address const', 'peerAddress'), param('uint32_t', 'size')])
     ## peer-management-protocol.h: void ns3::dot11s::PeerManagementProtocol::TransmissionSuccess(uint32_t interface, ns3::Mac48Address const peerAddress) [member function]
     cls.add_method('TransmissionSuccess', 
                    'void', 
-                   [param('uint32_t', 'interface'), param('ns3::Mac48Address const', 'peerAddress')])
+                   [param('uint32_t', 'interface'), param('ns3::Mac48Address const', 'peerAddress'), param('uint32_t', 'size')])
     return
 
 def register_Ns3FlameFlameHeader_methods(root_module, cls):
