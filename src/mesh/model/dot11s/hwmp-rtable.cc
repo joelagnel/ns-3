@@ -57,6 +57,7 @@ void
 HwmpRtable::AddReactivePath (Mac48Address destination, Mac48Address retransmitter, uint32_t interface,
     uint32_t metric, Time lifetime, uint32_t seqnum)
 {
+  NS_LOG_DEBUG("Adding table entry for " << destination);
   std::map<Mac48Address, ReactiveRoute>::iterator i = m_routes.find (destination);
   if (i == m_routes.end ())
     {
@@ -71,6 +72,30 @@ HwmpRtable::AddReactivePath (Mac48Address destination, Mac48Address retransmitte
   i->second.whenExpire = Simulator::Now () + lifetime;
   i->second.seqnum = seqnum;
 }
+
+void
+HwmpRtable::ForceReactivePath (Mac48Address destination, Mac48Address retransmitter)
+{
+  NS_LOG_DEBUG("Forcing table entry for " << destination);
+  std::map<Mac48Address, ReactiveRoute>::iterator i = m_routes.find (destination);
+  printf("5\n");
+  if (i == m_routes.end ())
+    {
+      ReactiveRoute newroute;
+      m_routes[destination] = newroute;
+    }
+
+  i = m_routes.find (destination);
+
+  NS_ASSERT (i != m_routes.end ());
+
+  i->second.retransmitter = retransmitter;
+  i->second.interface = 1;					// Assume a single point mp
+  i->second.metric = 0;
+  i->second.whenExpire = Seconds(0);
+  i->second.seqnum = 0;
+}
+
 void
 HwmpRtable::AddProactivePath (uint32_t metric, Mac48Address root, Mac48Address retransmitter,
     uint32_t interface, Time lifetime, uint32_t seqnum)
@@ -133,7 +158,7 @@ void
 HwmpRtable::DeleteReactivePath (Mac48Address destination)
 {
   std::map<Mac48Address, ReactiveRoute>::iterator i = m_routes.find (destination);
-  if (i != m_routes.end ())
+  if (i != m_routes.end () && (i->second.whenExpire != Seconds (0)))
     {
       m_routes.erase (i);
     }
@@ -141,6 +166,7 @@ HwmpRtable::DeleteReactivePath (Mac48Address destination)
 HwmpRtable::LookupResult
 HwmpRtable::LookupReactive (Mac48Address destination)
 {
+  NS_LOG_DEBUG("Looking up table for " << destination);
   std::map<Mac48Address, ReactiveRoute>::iterator i = m_routes.find (destination);
   if (i == m_routes.end ())
     {

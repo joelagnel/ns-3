@@ -397,6 +397,12 @@ HwmpProtocol::ForwardUnicast (uint32_t  sourceIface, const Mac48Address source, 
       return false;
     }
 }
+
+void HwmpProtocol::ForcePath(Mac48Address destination, Mac48Address retransmitter)
+{
+	m_rtable->ForceReactivePath(destination, retransmitter);
+}
+
 void
 HwmpProtocol::ReceivePreq (IePreq preq, Mac48Address from, uint32_t interface, Mac48Address fromMp, uint32_t metric)
 {

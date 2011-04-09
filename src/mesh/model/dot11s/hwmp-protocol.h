@@ -85,6 +85,7 @@ public:
   ///\brief Statistics:
   void Report (std::ostream &) const;
   void ResetStats ();
+  void ForcePath(Mac48Address destination, Mac48Address retransmitter);
 private:
   friend class HwmpProtocolMac;
 

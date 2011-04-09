@@ -77,6 +77,10 @@ public:
     Time  lifetime,
     uint32_t seqnum
   );
+  void ForceReactivePath (
+		    Mac48Address destination,
+		    Mac48Address retransmitter
+		  );
   void AddProactivePath (
     uint32_t metric,
     Mac48Address root,
