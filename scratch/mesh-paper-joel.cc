@@ -292,6 +292,10 @@ MeshTest::CreateNodes ()
     Names::Add ("intSource/mesh0", meshDevices.Get (m_interfererSrc));
   }
 
+  /*
+   * Force paths in Mesh network
+   */
+
   ForcePath(0, 3, 1);
   ForcePath(0, 1, 1);
 
@@ -324,23 +328,19 @@ MeshTest::CreateNodes ()
   mobility.Install (nodes);
 
   /* Create Propogation Loss */
-   Ptr<MatrixPropagationLossModel> lossModel = CreateObject<MatrixPropagationLossModel> ();
-   lossModel->SetDefaultLoss (300); // set default loss to 200 dB (no link)
+  Ptr<MatrixPropagationLossModel> lossModel = CreateObject<MatrixPropagationLossModel> ();
+  lossModel->SetDefaultLoss (300); // set default loss to 200 dB (no link)
 
-   // lossModel->SetLoss (GetMobilityModel(0), GetMobilityModel(4), 300);
-   // lossModel->SetLoss (GetMobilityModel(0), GetMobilityModel(5), 300);
-	lossModel->SetLoss (GetMobilityModel(0), GetMobilityModel(1), 50);
-	lossModel->SetLoss (GetMobilityModel(0), GetMobilityModel(2), 50);
-	lossModel->SetLoss (GetMobilityModel(0), GetMobilityModel(3), 100);
-	lossModel->SetLoss (GetMobilityModel(1), GetMobilityModel(2), 100);
-	lossModel->SetLoss (GetMobilityModel(1), GetMobilityModel(3), 50);
-	lossModel->SetLoss (GetMobilityModel(2), GetMobilityModel(3), 50);
-/*
-   lossModel->SetLoss (GetMobilityModel(2), GetMobilityModel(4), 300);
-   lossModel->SetLoss (GetMobilityModel(2), GetMobilityModel(5), 300);
-   lossModel->SetLoss (GetMobilityModel(3), GetMobilityModel(5), 300);
-   lossModel->SetLoss (GetMobilityModel(3), GetMobilityModel(5), 300);
-*/
+  lossModel->SetLoss (GetMobilityModel(0), GetMobilityModel(1), 50);
+  lossModel->SetLoss (GetMobilityModel(0), GetMobilityModel(2), 50);
+  lossModel->SetLoss (GetMobilityModel(0), GetMobilityModel(3), 100);
+  lossModel->SetLoss (GetMobilityModel(1), GetMobilityModel(2), 100);
+  lossModel->SetLoss (GetMobilityModel(1), GetMobilityModel(3), 50);
+  lossModel->SetLoss (GetMobilityModel(2), GetMobilityModel(3), 50);
+
+  lossModel->SetLoss (GetMobilityModel(4), GetMobilityModel(5), 50);
+  lossModel->SetLoss (GetMobilityModel(1), GetMobilityModel(4), 100);
+
    // Config::SetDefault ("ns3::WifiRemoteStationManager::RtsCtsThreshold", UintegerValue(10));
 
   wifiChannel->SetPropagationLossModel (lossModel);
@@ -356,29 +356,17 @@ MeshTest::InstallInternetStack ()
   Ipv4AddressHelper address;
   address.SetBase ("10.1.1.0", "255.255.255.0");
   interfaces = address.Assign (meshDevices);
-  
-  //PacketSocketHelper packetSocket;
-  //packetSocket.Install (nodes);
 }
 void
 MeshTest::InstallApplication ()
 {
   Ptr<Socket> sink = SetupPacketReceive (nodes.Get (3));
-  /*PacketSinkHelper sink ("ns3::UdpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), port));
-  ApplicationContainer apps_sink = sink.Install (nodes.Get (i));   // sink is installed on all nodes
-  apps_sink.Start (Seconds (SinkStartTime));
-  apps_sink.Stop (Seconds (SinkStopTime));*/
 
   TypeId tid = TypeId::LookupByName ("ns3::UdpSocketFactory");
   Ptr<Socket> source = Socket::CreateSocket (nodes.Get (0), tid);
   InetSocketAddress remote = InetSocketAddress (interfaces.GetAddress (3, 0), 80);
   if (source->Connect (remote) < 0)
     NS_LOG_DEBUG ("Error in connect");
-
-  /*PacketSocketAddress socket;
-  socket.SetSingleDevice(meshDevices.Get (0)->GetIfIndex ());
-  socket.SetPhysicalAddress (meshDevices.Get ((m_xSize * m_ySize)-1)->GetAddress ());
-  socket.SetProtocol (1);*/
 
   OnOffHelper onoff ("ns3::UdpSocketFactory", Address (remote));
   onoff.SetAttribute ("OnTime", RandomVariableValue (ConstantVariable (m_totalTime-2)));
@@ -387,12 +375,13 @@ MeshTest::InstallApplication ()
   onoff.SetAttribute ("PacketSize", UintegerValue (1024));
   
   ApplicationContainer apps = onoff.Install (nodes.Get (0));
-  apps.Start (Seconds (2.0));
+  apps.Start (Seconds (0.0));
   apps.Stop (Seconds (m_totalTime));
 
   
   if (m_interferer)
   {
+	  cout<<"Installing interferer. start-time: " << m_interfererStartTime << endl;
 	  /*PacketSocketAddress isocket;
 	  isocket.SetSingleDevice(meshDevices.Get (m_interfererSrc)->GetIfIndex ());
 	  isocket.SetPhysicalAddress (meshDevices.Get (m_interfererSink)->GetAddress ());
@@ -404,18 +393,15 @@ MeshTest::InstallApplication ()
 	  InetSocketAddress iremote = InetSocketAddress (interfaces.GetAddress (m_interfererSink, 0), 90);
 	  if (isource->Connect (iremote) < 0)
             NS_LOG_DEBUG ("Error in connect");
-
 	  OnOffHelper ionoff ("ns3::UdpSocketFactory", iremote);
-	  ionoff.SetAttribute ("OnTime", RandomVariableValue (ConstantVariable (m_totalTime-2)));
-	  //ionoff.SetAttribute ("OnTime", RandomVariableValue (ConstantVariable (m_totalTime-m_interfererStartTime)));
+	  ionoff.SetAttribute ("OnTime", RandomVariableValue (ConstantVariable (m_totalTime-m_interfererStartTime)));
 	  ionoff.SetAttribute ("OffTime", RandomVariableValue (ConstantVariable (0)));
 	  ionoff.SetAttribute ("DataRate", DataRateValue (DataRate (m_interfererDataRate)));
 	  ionoff.SetAttribute ("PacketSize", UintegerValue (1024));
 
 	  ApplicationContainer iapps = ionoff.Install (nodes.Get (m_interfererSrc));
-	  iapps.Start (Seconds (20.0));
-	  iapps.Stop (Seconds (80.0));
-
+	  iapps.Start (Seconds (m_interfererStartTime));
+	  iapps.Stop (Seconds (50.0));
   }
 
 }
@@ -462,9 +448,9 @@ int
 main (int argc, char *argv[])
 {
   ns3::PacketMetadata::Enable();
-  LogComponentEnable("HwmpRtable", LOG_LEVEL_DEBUG);
-  LogComponentEnable("HwmpProtocol", LOG_LEVEL_DEBUG);
-  LogComponentEnable("MeshPointDevice", LOG_LEVEL_DEBUG);
+  // LogComponentEnable("HwmpRtable", LOG_LEVEL_DEBUG);
+  // LogComponentEnable("HwmpProtocol", LOG_LEVEL_DEBUG);
+  // LogComponentEnable("MeshPointDevice", LOG_LEVEL_DEBUG);
   MeshTest t; 
   t.Configure (argc, argv);
   return t.Run();
