@@ -221,7 +221,7 @@ MeshTest::ForcePath(int current, int destination, int retransmitter)
 	Mac48Address destination_mac = Mac48Address::ConvertFrom(meshDevices.Get(destination)->GetAddress());
 	Mac48Address retransmitter_mac = Mac48Address::ConvertFrom(meshDevices.Get(retransmitter)->GetAddress());
 	Ptr<ns3::MeshPointDevice> mp = dynamic_cast<ns3::MeshPointDevice*>(PeekPointer(meshDevices.Get(current)));
-	Ptr<ns3::MeshL2RoutingProtocol> m_proto = mp->GetRoutingProtocol();
+	Ptr<ns3::dot11s::HwmpProtocol> m_proto = dynamic_cast<ns3::dot11s::HwmpProtocol*>(PeekPointer(mp->GetRoutingProtocol()));
 	m_proto->ForcePath(destination_mac, retransmitter_mac);
 }
 
