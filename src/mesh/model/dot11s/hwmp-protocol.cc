@@ -320,7 +320,7 @@ HwmpProtocol::ForwardUnicast (uint32_t  sourceIface, const Mac48Address source, 
 {
   NS_ASSERT(destination != Mac48Address::GetBroadcast ());
   HwmpRtable::LookupResult result = m_rtable->LookupReactive (destination);
-  NS_LOG_DEBUG ("Requested src = "<<source<<", dst = "<<destination<<", I am "<<GetAddress ()<<", RA = "<<result.retransmitter);
+  NS_LOG_DEBUG ("Requested src = "<<source<<", dst = "<<destination<<", I am "<<GetAddress ()<<", RA = "<<result.retransmitter<<" sourceIface = " << sourceIface << " ; mp Index = " << GetMeshPoint()->GetIfIndex());
   if (result.retransmitter == Mac48Address::GetBroadcast ())
     {
       result = m_rtable->LookupProactive ();
@@ -341,7 +341,6 @@ HwmpProtocol::ForwardUnicast (uint32_t  sourceIface, const Mac48Address source, 
   if (sourceIface != GetMeshPoint ()->GetIfIndex ())
     {
       //Start path error procedure:
-      NS_LOG_DEBUG ("Must Send PERR");
       result = m_rtable->LookupReactiveExpired (destination);
       //1.  Lookup expired reactive path. If exists - start path error
       //    procedure towards a next hop of this path
@@ -354,6 +353,7 @@ HwmpProtocol::ForwardUnicast (uint32_t  sourceIface, const Mac48Address source, 
         }
       if (result.retransmitter != Mac48Address::GetBroadcast ())
         {
+          NS_LOG_ERROR ("Must Send PERR");
           std::vector<FailedDestination> destinations = m_rtable->GetUnreachableDestinations (result.retransmitter);
           InitiatePathError (MakePathError (destinations));
         }
@@ -648,7 +648,7 @@ void
 HwmpProtocol::ReceivePerr (std::vector<FailedDestination> destinations, Mac48Address from, uint32_t interface, Mac48Address fromMp)
 {
   //Acceptance cretirea:
-  NS_LOG_DEBUG ("I am "<<GetAddress ()<<", received PERR from "<<from);
+  NS_LOG_ERROR ("I am "<<GetAddress ()<<", received PERR from "<<from);
   std::vector<FailedDestination> retval;
   HwmpRtable::LookupResult result;
   for (unsigned int i = 0; i < destinations.size (); i ++)
